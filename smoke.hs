@@ -18,6 +18,7 @@ import Data.Maybe
 import SDL
 import SDL.Raw.Video
 import Control.Concurrent
+import Graphics.GL.GetProcAddress 
 
 main :: IO ()
 main = do
@@ -49,6 +50,7 @@ program =
                                      SDL_WINDOW_SHOWN)
         _ <- SDL.Raw.Video.glCreateContext window
         giveContext $ do
+            print =<< getExtensions
             -- Make some buffers.
             for_ [1..100 :: Integer] $ \idx -> do
                 buf <- newBuffer defaultBufferCreation { size = 1024

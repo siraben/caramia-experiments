@@ -9,7 +9,7 @@ let
     sha256 = "0dxc6wy8lf8vcv2i1bac0592k273ds7g09xm4hfzi7rn38nqzjgj";
   };
   my-caramia = haskellPackages.callPackage caramia-src { };
-  my-ghc = haskellPackages.ghcWithPackages (h: [ my-caramia h.SDL h.sdl2 ]);
+  my-ghc = haskellPackages.ghcWithPackages (h: [ my-caramia h.SDL h.sdl2 h.OpenGLRaw ]);
 in
 mkShell {
   buildInputs = [ my-ghc ];
