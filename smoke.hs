@@ -17,6 +17,7 @@ import SDL.Raw.Enum
 import Data.Maybe
 import SDL
 import SDL.Raw.Video
+import Control.Concurrent
 
 main :: IO ()
 main = do
@@ -36,7 +37,7 @@ main = do
 
 program :: IO ()
 program = 
-    withCString "smoke-test" $ \cstr -> do
+    withCString "smoke-test" $ \cstr -> do {runInBoundThread (do
         _ <- glSetAttribute SDL_GL_CONTEXT_MAJOR_VERSION 3
         _ <- glSetAttribute SDL_GL_CONTEXT_MINOR_VERSION 3
         _ <- glSetAttribute SDL_GL_CONTEXT_PROFILE_MASK SDL_GL_CONTEXT_PROFILE_CORE
@@ -148,6 +149,7 @@ program =
             performGC
             runPendingFinalizers
             return ()
+                                                             )}
 
 fragmentShaderSrc :: T.Text
 fragmentShaderSrc = "" <>
