@@ -9,9 +9,14 @@ import Foreign.C.String
 import Foreign.C.Types
 import Graphics.Caramia.Prelude hiding ( init )
 import Graphics.Caramia
-import Graphics.UI.SDL
+--import Graphics.UI.SDL
+import SDL.Video
 import Linear.Matrix
 import System.Mem
+import SDL.Raw.Enum
+import Data.Maybe
+import SDL
+import SDL.Raw.Video
 
 main :: IO ()
 main = do
@@ -25,22 +30,23 @@ main = do
     putStrLn "Press enter to start the smoke test."
     _ <- getLine
     putStrLn "Running the smoke test..."
-    bracket_ (init SDL_INIT_VIDEO)
+    bracket_ (SDL.initialize [InitVideo])
              quit
              program
 
 program :: IO ()
-program =
+program = 
     withCString "smoke-test" $ \cstr -> do
         _ <- glSetAttribute SDL_GL_CONTEXT_MAJOR_VERSION 3
         _ <- glSetAttribute SDL_GL_CONTEXT_MINOR_VERSION 3
         _ <- glSetAttribute SDL_GL_CONTEXT_PROFILE_MASK SDL_GL_CONTEXT_PROFILE_CORE
         _ <- glSetAttribute  SDL_GL_CONTEXT_FLAGS SDL_GL_CONTEXT_DEBUG_FLAG
-        window <- createWindow cstr SDL_WINDOWPOS_UNDEFINED SDL_WINDOWPOS_UNDEFINED
+        --window <- createWindow "smoke-test" (defaultWindow{windowPosition = Wherever, windowInitialSize = V2 500 500, windowGraphicsContext = defaultOpenGL })
+        window <- SDL.Raw.Video.createWindow cstr SDL_WINDOWPOS_UNDEFINED SDL_WINDOWPOS_UNDEFINED
                                     500 500
                                     (SDL_WINDOW_OPENGL .|.
                                      SDL_WINDOW_SHOWN)
-        _ <- glCreateContext window
+        _ <- SDL.Raw.Video.glCreateContext window
         giveContext $ do
             -- Make some buffers.
             for_ [1..100 :: Integer] $ \idx -> do
@@ -57,7 +63,7 @@ program =
                                                        , accessFlags =
                                                            ReadAccess }
                 withMapping 23 50000 ReadAccess buf $ \_ -> return ()
-                copy buf 100 buf 500 400
+                Graphics.Caramia.copy buf 100 buf 500 400
                 runPendingFinalizers
 
                 -- Compile a gazillion shaders
@@ -65,16 +71,16 @@ program =
                 pipeline <- newPipeline [sh1] mempty
                 loc <- getUniformLocation "tutturuu" pipeline
                 setUniform (transpose identity :: M44 CFloat)
-                           loc
+                           (fromJust loc)
                            pipeline
                 setUniform (identity :: M44 CDouble)
-                           loc
+                           (fromJust loc)
                            pipeline
                 setUniform (identity :: M33 Float)
-                           loc
+                           (fromJust loc)
                            pipeline
                 setUniform (transpose identity :: M33 Double)
-                           loc
+                           (fromJust loc)
                            pipeline
 
                 tex <- newTexture
@@ -108,7 +114,7 @@ program =
                                   , stride = 19
                                   , instancingDivisor = 19
                                   , attributeIndex = 3
-                                  , normalize = True
+                                  , Graphics.Caramia.normalize = True
                                   , integerMapping = False })
                                  vao
                 draw drawCommand {
